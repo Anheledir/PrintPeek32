@@ -33,6 +33,8 @@ void Cfg_SaveExposureCtrl(bool);
 void Cfg_SaveFirstMcuStartFlag(uint8_t);
 void Cfg_SaveCameraFlash(bool);
 void Cfg_SaveCameraFlashDuration(uint16_t);
+void Cfg_SaveWiFiSsid(String);
+void Cfg_SaveWifiPsw(String);
 
 void Cfg_LoadRefreshInterval();
 void Cfg_LoadToken();
@@ -48,6 +50,8 @@ void Cfg_LoadLensCorrect();
 void Cfg_LoadExposureCtrl();
 void Cfg_LoadCameraFlash();
 void Cfg_LoadCameraFlashDuration();
+void Cfg_LoadWifiSsid();
+void Cfg_LoadWifiPsw();
 
 #endif
 

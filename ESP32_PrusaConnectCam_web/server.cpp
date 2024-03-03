@@ -246,7 +246,7 @@ void Server_SendPhotoToPrusaBackend() {
       Serial.println("Connected to server!");
       client.println("PUT " + String(HOST_URL) + " HTTP/1.0");
       client.println("Host: " + String(DOMAIN));
-      client.println("User-Agent: ESP32-CAM");
+      client.println("User-Agent: PrintPeek32");
       client.println("Connection: close");
 
       client.println("Content-Type: image/jpg");

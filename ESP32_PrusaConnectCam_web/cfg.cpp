@@ -33,6 +33,8 @@ void Cfg_ReadCfg() {
   Cfg_LoadExposureCtrl();
   Cfg_LoadCameraFlash();
   Cfg_LoadCameraFlashDuration();
+  Cfg_LoadWifiSsid();
+  Cfg_LoadWifiPsw();
 }
 
 /* set default cfg */
@@ -52,7 +54,9 @@ void Cfg_DefaultCfg() {
   Cfg_SaveLensCorrect(1);
   Cfg_SaveExposureCtrl(1);
   Cfg_SaveCameraFlash(false);
-  Cfg_SaveCameraFlashDuration(200);
+  Cfg_SaveCameraFlashDuration(110);
+  Cfg_SaveWiFiSsid("");
+  Cfg_SaveWifiPsw("");
 }
 
 void Cfg_GetFingerprint() {
@@ -294,6 +298,44 @@ void Cfg_SaveCameraFlashDuration(uint16_t i_data) {
   EEPROM.commit();
 }
 
+void Cfg_SaveWiFiSsid(String i_ssid) {
+  uint8_t len = i_ssid.length();
+  Serial.print("Save WiFi SSID[");
+  Serial.print(len);
+  Serial.print("]: ");
+  Serial.println(i_ssid);
+
+  if (len < EEPROM_ADDR_WIFI_SSID_LENGTH) {
+    EEPROM.write(EEPROM_ADDR_WIFI_SSID_START, len);
+
+    for (uint8_t i = EEPROM_ADDR_WIFI_SSID_START + 1, j = 0; j < len; i++, j++) {
+      EEPROM.write(i, i_ssid.charAt(j));
+    }
+    EEPROM.commit();
+    Serial.println("Write done");
+  } else {
+    Serial.println("Skip write");
+}
+
+void Cfg_SaveWiFiPsw(String i_psw) {
+  uint8_t len = i_psw.length();
+  Serial.print("Save WiFi Password[");
+  Serial.print(len);
+  Serial.print("]: ");
+  Serial.println(i_psw);
+
+  if (len < EEPROM_ADDR_WIFI_PASS_LENGTH) {
+    EEPROM.write(EEPROM_ADDR_WIFI_PASS_START, len);
+
+    for (uint8_t i = EEPROM_ADDR_WIFI_PASS_START + 1, j = 0; j < len; i++, j++) {
+      EEPROM.write(i, i_psw.charAt(j));
+    }
+    EEPROM.commit();
+    Serial.println("Write done");
+  } else {
+    Serial.println("Skip write");
+}
+
 /* load refresh interval from eeprom */
 void Cfg_LoadRefreshInterval() {
   RefreshInterval = EEPROM.read(EEPROM_ADDR_REFRESH_INTERVAL_START);
@@ -407,5 +449,44 @@ void Cfg_LoadCameraFlashDuration() {
   Serial.print("Camera flash duration: ");
   Serial.println(CameraCfg.CameraFlashDuration);
 }
+
+void Cfg_LoadWifiSsid() {
+  String tmp = "";
+  uint8_t len = EEPROM.read(EEPROM_ADDR_WIFI_SSID_START);
+  Serial.print("Read WiFi SSID [");
+  Serial.print(len);
+  Serial.print("]: ");
+
+  if ((len <= EEPROM_ADDR_WIFI_SSID_LENGTH) && (len > 0)) {
+    for (uint8_t i = EEPROM_ADDR_WIFI_SSID_START + 1, j = 0; j < len; i++, j++) {
+      tmp += (char) EEPROM.read(i);
+    }
+    sWiFiSsid = tmp;
+  }
+
+  Serial.print(tmp);
+  Serial.print(" -> ");
+  Serial.println(sWiFiSsid);
+}
+
+void Cfg_LoadWifiPsw() {
+  String tmp = "";
+  uint8_t len = EEPROM.read(EEPROM_ADDR_WIFI_PASS_START);
+  Serial.print("Read WiFi SSID [");
+  Serial.print(len);
+  Serial.print("]: ");
+
+  if ((len <= EEPROM_ADDR_WIFI_PASS_LENGTH) && (len > 0)) {
+    for (uint8_t i = EEPROM_ADDR_WIFI_PASS_START + 1, j = 0; j < len; i++, j++) {
+      tmp += (char) EEPROM.read(i);
+    }
+    sWiFiPsw = tmp;
+  }
+
+  Serial.print(tmp);
+  Serial.print(" -> ");
+  Serial.println(sWiFiPsw);
+}
+
 
 /* EOF */

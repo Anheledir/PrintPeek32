@@ -8,6 +8,9 @@ String sToken = "";
 String sFingerprint = "";
 String WifiMacAddr = "";
 
+String sWiFiSsid = "";
+String sWifiPsw = "";
+
 struct CameraCfg_struct CameraCfg;
 
 /* EOF */
