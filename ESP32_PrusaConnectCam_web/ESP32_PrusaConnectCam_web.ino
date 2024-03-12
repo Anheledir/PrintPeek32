@@ -26,11 +26,6 @@
 #include "var.h"
 #include "mcu_cfg.h"
 
-/* CFG variable */
-/* Replace with your network credentials */
-const char* ssid     =      "SSID";
-const char* password =      "PASSWORD";
-
 void setup() {
   /* Serial port for debugging purposes */
   Serial.begin(SERIAL_PORT_SPEER);
@@ -42,13 +37,28 @@ void setup() {
   WifiMacAddr = WiFi.macAddress();
   Cfg_Init();
 
+  /* If WiFi credentials are empty, start AP mode immediately */
+  if (sWiFiSsid == "" || sWiFiPsw == "") {
+    startAPMode();
+    return;
+  }
+  
   /* Connect to Wi-Fi */
-  WiFi.begin(ssid, password);
+  WiFi.begin(sWiFiSsid, sWiFiPsw);
   Serial.println("Connecting to WiFi");
+  int connectionAttempts = 0;
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.print(".");
+    connectionAttempts++;
+
+    if (connectionAttempts >= 5) {
+      startAPMode();
+      return;
+    }
   }
+  
   Serial.println("");
   Serial.print("Signal Strength (RSSI): ");
   Serial.print(WiFi.RSSI());
@@ -88,9 +98,21 @@ void setup() {
   Serial.println("MCU configuration done!");
 }
 
+void startAPMode() {
+    WiFi.softAP("PrintPeek32", NULL); // No password
+
+    Serial.println("Started AP Mode");
+    Serial.print("AP IP Address: ");
+    Serial.println(WiFi.softAPIP());
+
+    Server_InitApServer();
+}
+
 void loop() {
   Serial.println("----------------------------------------------------------------");
   /* check wifi reconnecting */
+
+
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Reconnecting to WiFi...");
     WiFi.disconnect();

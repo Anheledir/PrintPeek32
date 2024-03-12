@@ -33,8 +33,8 @@ void Cfg_ReadCfg() {
   Cfg_LoadExposureCtrl();
   Cfg_LoadCameraFlash();
   Cfg_LoadCameraFlashDuration();
-  Cfg_LoadWifiSsid();
-  Cfg_LoadWifiPsw();
+  Cfg_LoadWiFiSsid();
+  Cfg_LoadWiFiPsw();
 }
 
 /* set default cfg */
@@ -56,7 +56,7 @@ void Cfg_DefaultCfg() {
   Cfg_SaveCameraFlash(false);
   Cfg_SaveCameraFlashDuration(110);
   Cfg_SaveWiFiSsid("");
-  Cfg_SaveWifiPsw("");
+  Cfg_SaveWiFiPsw("");
 }
 
 void Cfg_GetFingerprint() {
@@ -315,6 +315,7 @@ void Cfg_SaveWiFiSsid(String i_ssid) {
     Serial.println("Write done");
   } else {
     Serial.println("Skip write");
+  }
 }
 
 void Cfg_SaveWiFiPsw(String i_psw) {
@@ -334,6 +335,7 @@ void Cfg_SaveWiFiPsw(String i_psw) {
     Serial.println("Write done");
   } else {
     Serial.println("Skip write");
+  }
 }
 
 /* load refresh interval from eeprom */
@@ -450,7 +452,7 @@ void Cfg_LoadCameraFlashDuration() {
   Serial.println(CameraCfg.CameraFlashDuration);
 }
 
-void Cfg_LoadWifiSsid() {
+void Cfg_LoadWiFiSsid() {
   String tmp = "";
   uint8_t len = EEPROM.read(EEPROM_ADDR_WIFI_SSID_START);
   Serial.print("Read WiFi SSID [");
@@ -469,7 +471,7 @@ void Cfg_LoadWifiSsid() {
   Serial.println(sWiFiSsid);
 }
 
-void Cfg_LoadWifiPsw() {
+void Cfg_LoadWiFiPsw() {
   String tmp = "";
   uint8_t len = EEPROM.read(EEPROM_ADDR_WIFI_PASS_START);
   Serial.print("Read WiFi SSID [");

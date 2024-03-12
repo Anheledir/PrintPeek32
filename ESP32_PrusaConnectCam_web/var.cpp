@@ -9,7 +9,7 @@ String sFingerprint = "";
 String WifiMacAddr = "";
 
 String sWiFiSsid = "";
-String sWifiPsw = "";
+String sWiFiPsw = "";
 
 struct CameraCfg_struct CameraCfg;
 

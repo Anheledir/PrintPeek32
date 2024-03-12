@@ -1,6 +1,148 @@
 #ifndef _WEB_PAGE_H_
 #define _WEB_PAGE_H_
 
+const char ap_html[] PROGMEM = R"rawliteral(
+
+<!DOCTYPE HTML><html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+    <style>
+    /* submit button */
+      input[type=submit] {
+        background-color: #fa6831;
+        border: none;
+        color: white;
+        padding: 10px 32px;
+        text-decoration: none;
+        margin: 1px 1px;
+        cursor: pointer;
+      }
+        
+        /* text input */
+      input[type=text] {
+        padding: 8px 20px;
+        margin: 1px 1px;
+        box-sizing: border-box;
+        border: 3px solid #ccc;
+        -webkit-transition: 0.5s;
+        transition: 0.5s;
+        outline: none;
+        width: 210px;
+        text-align: center;
+      }
+
+      input[type=text]:focus {
+        border: 3px solid #555;
+      }
+
+      .button {
+        background-color: #fa6831;
+        border: none;
+        color: white;
+        padding: 10px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 1px 1px;
+        cursor: pointer;
+      }
+      
+      .select {
+        /*background-color: #fa6831;*/
+        border: 3px solid #ccc;
+        /*color: white;*/
+        padding: 8px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        margin: 1px 1px;
+        cursor: pointer;
+        width: 210px;
+      }
+  </style>
+  <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
+</head>
+<body>
+  <div id="container">
+      <center><h2>PrintPeek32 WiFi-Setup</h2></center>
+      <br><hr><h3>Buttons</hr>
+      <p>
+        <button class="button" onclick="reset()">Reset to default configuration</button>
+        <button class="button" onclick="reboot()">Reboot MCU</button>
+      </p>
+      <br><hr>
+      <table id="input">
+      <tr>
+        <td>
+          SSID:
+        </td>
+        <td>
+          <form action="/ssid">
+            <input type="text" name="ssid" value="Your WiFi-SSID">
+            <input type="submit" value="Save">
+          </form>
+        </td>
+      </tr>
+      
+      <tr>
+        <td>
+          Password:
+        </td>
+        <td>
+          <form action="/psw">
+            <input type="text" name="psw" value="Your WiFi-Password">
+            <input type="submit" value="Save">
+          </form>
+        </td>
+      </tr>
+   <hr>
+   <strong>Project: PrintPeek32, Author: Gordon Breuer &amp; Andreas Rothmann, e-mail: printpeek32@gibtsnochnix.com</strong> <br/>
+   <em>Based on: ESP32 PrusaConnect Camera, Author: Miroslav Pivovarsky, e-mail: miroslav.pivovarsky@gmail.com</em>
+</body>
+
+<script>
+  function reset() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', "/reset", true);
+    xhr.send();
+  }
+
+  function reboot() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', "/reboot", true);
+    xhr.send();
+  }
+</script>
+<script>
+  (function() {
+  var reqData = function() {
+    jQuery.ajax({
+            url: '/json_input',
+            type: 'GET',
+            timeout: 30000,
+            success: function(data) {
+              console.log("Incommming data: ");
+              console.log(data);
+              var obj = JSON.parse(data);
+              console.log(obj);
+
+              $("#ssid").text(obj.ssid);
+              $("#psw").text(obj.psw);
+            },
+            error: function(html) {
+              console.log("json Timeout or error");
+              alert("jquery timeout or comunication error");
+            }
+        });
+  }
+  reqData();
+    //var t=setTimeout(function(){reqData();},20000)
+})();
+</script>
+</html>)rawliteral";
+
 const char index_html[] PROGMEM = R"rawliteral(
 
 <!DOCTYPE HTML><html>
@@ -90,7 +232,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <div id="container">
-      <center><h2>ESP32-CAM PrusaConnect cam</h2></center>
+      <center><h2>PrintPeek32 Configuration</h2></center>
       <br><hr><h3>Buttons</hr>
       <p>
         <button class="button" onclick="capturePhoto()">CAPTURE PHOTO</button>

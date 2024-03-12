@@ -3,7 +3,64 @@
 
 AsyncWebServer server(SERVER_PORT);
 
-/* init WEB server */
+/* init web server for ap */
+void Server_InitApServer() {
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
+    Serial.println("AP server: Get index.html");
+    request->send_P(200, "text/html", ap_html);
+  });
+
+  /* Route for resetting config to default */
+  server.on("/reset", HTTP_GET, [](AsyncWebServerRequest * request) {
+    Serial.println("AP server: Reset configuration to default");
+    Cfg_DefaultCfg();
+    request->send_P(200, F("text/html"), MSG_SAVE_OK);
+    Camera_Reinit();
+  });
+
+  /* Route for rebooting device */
+  server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest * request) {
+    Serial.println("AP server: reboot device");
+    request->send_P(200, F("text/html"), MSG_SAVE_OK);
+    ESP.restart();
+  });
+
+  /* route for set wifi ssid */
+  server.on("/ssid", HTTP_GET, [](AsyncWebServerRequest * request) {
+    Serial.println("AP server: set ssid");
+    request->send_P(200, F("text/html"), MSG_SAVE_OK);
+
+    if (request->hasParam("ssid")) {
+      sWiFiSsid = request->getParam("ssid")->value();
+      Cfg_SaveWiFiSsid(sWiFiSsid);
+    }
+  });
+
+  /* route for set wifi psw */
+  server.on("/psw", HTTP_GET, [](AsyncWebServerRequest * request) {
+    Serial.println("AP server: set password");
+    request->send_P(200, F("text/html"), MSG_SAVE_OK);
+
+    if (request->hasParam("psw")) {
+      sWiFiPsw = request->getParam("psw")->value();
+      Cfg_SaveWiFiPsw(sWiFiPsw);
+    }
+  });
+
+  /* route for json with cfg parameters */
+  server.on("/json_input", HTTP_GET, [](AsyncWebServerRequest * request) {
+    Serial.println("AP server: get json_input");
+    request->send_P(200, F("text/html"), Server_GetApData().c_str());
+  });
+
+  /* route for not found page */
+  server.onNotFound(Server_handleNotFound);
+
+  /* start WEB server */
+  server.begin();
+}
+
+/* init web server for config */
 void Server_InitWebServer() {
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -300,6 +357,20 @@ void Server_SendPhotoToPrusaBackend() {
       Serial.println("INVALID TOKEN DATA!");
     }
   }
+}
+
+/* make json data for AP page on the ESP32 */
+String Server_GetApData() {
+  String data = {""};
+  data = "{\"ssid\" : \"";
+  data += sWiFiSsid;
+  data += "\", ";
+
+  data += "\"psw\" : \"";
+  data += sWiFiPsw;
+  data += "\" }";
+
+  return data;
 }
 
 /* make json data for WEB page on the ESP32*/

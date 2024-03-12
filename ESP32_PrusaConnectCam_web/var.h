@@ -12,8 +12,8 @@ extern String sToken;                 /* token for authentification to prusa bac
 extern String sFingerprint;           /* fingerprint for autentification to prusa backend */
 extern String WifiMacAddr;            /* WiFi MAC address */
 
-extern String sWiFiSsid = "";         /* WiFi AP SSID */  
-extern String sWifiPsw = "";          /* WiFi AP password */
+extern String sWiFiSsid;         /* WiFi AP SSID */  
+extern String sWiFiPsw;          /* WiFi AP password */
 
 struct CameraCfg_struct {
   uint8_t PhotoQuality;
