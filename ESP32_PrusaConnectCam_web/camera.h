@@ -17,7 +17,7 @@
 void Camera_InitCamera();
 void Camera_SetCameraCfg();
 void Camera_Reinit();
-void Camera_CapturePhoto();
+bool Camera_CapturePhoto();
 
 #endif
 

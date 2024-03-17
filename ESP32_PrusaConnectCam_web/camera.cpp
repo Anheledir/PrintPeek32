@@ -1,47 +1,55 @@
 #include "camera.h"
 
 /* Capture Photo and Save it to string array */
-void Camera_CapturePhoto() {
-  camera_fb_t * fb = NULL;
+bool Camera_CapturePhoto() {
+    camera_fb_t * fb = NULL;
 
-  /* check flash */
-  if (true == CameraCfg.CameraFlashStatus) {
-    digitalWrite(FLASH_GPIO_NUM, HIGH);
-    delay(CameraCfg.CameraFlashDuration);
-  }
-  /* get train photo */
-  fb = esp_camera_fb_get();
-  esp_camera_fb_return(fb);
+    /* turn LED on when configured */
+    if (true == CameraCfg.CameraFlashStatus) {
+        digitalWrite(FLASH_GPIO_NUM, HIGH);
 
-  do {
-    Serial.println("Taking a photo...");
-
-    /* get photo */
-    fb = esp_camera_fb_get();
-    if (!fb) {
-      Serial.println("Camera capture failed");
-      return;
-
-    } else {
-      /* copy photo from buffer to string array */
-      photo = "";
-      for (uint32_t i = 0; i < fb->len; i++) {
-        photo += (char) fb->buf[i];
-      }
-
-      Serial.print("The picture has been saved. ");
-      Serial.print(" - Size: ");
-      Serial.print(photo.length());
-      Serial.println(" bytes");
+        /* wait a moment for the LED to turn on */
+        delay(CameraCfg.CameraFlashDuration);
     }
+
+    /* get train photo */
+    fb = esp_camera_fb_get();
     esp_camera_fb_return(fb);
 
-    /* check if photo is correctly saved */
-  } while ( !( photo.length() > 100));
+    do {
+        Serial.println("Taking a photo...");
 
-  if (true == CameraCfg.CameraFlashStatus) {
+        /* get photo */
+        fb = esp_camera_fb_get();
+        if (!fb) {
+            /* turn LED off */
+            digitalWrite(FLASH_GPIO_NUM, LOW);
+
+            Serial.println("Camera capture failed");
+            return false;
+
+        } else {
+            /* copy photo from buffer to string array */
+            photo = "";
+            for (uint32_t i = 0; i < fb->len; i++) {
+                photo += (char) fb->buf[i];
+            }
+
+            Serial.print("The picture has been saved. ");
+            Serial.print(" - Size: ");
+            Serial.print(photo.length());
+            Serial.println(" bytes");
+        }
+    
+        /* reset watchdog */
+        esp_camera_fb_return(fb);
+
+        /* continue till photo is correctly saved */
+    } while ( !( photo.length() > 100));
+
     digitalWrite(FLASH_GPIO_NUM, LOW);
-  }
+
+    return true;
 }
 
 /* Init camera module */

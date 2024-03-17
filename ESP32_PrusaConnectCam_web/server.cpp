@@ -287,76 +287,91 @@ void Server_handleNotFound(AsyncWebServerRequest * request) {
 
 /* send photo to prusa backend server */
 void Server_SendPhotoToPrusaBackend() {
-  WiFiClientSecure client;
+    /* check fingerprint and token length and exit if not both are OK*/
+    if ((sFingerprint.length() == 0) || (sToken.length() == 0)) {
+        /* err message */
+        Serial.println("ERROR SEND PICTURE TO SERVER! INVALID DATA!");
+        Serial.print("Fingerprint: ");
+        Serial.println(sFingerprint);
+        Serial.print("Token: ");
+        Serial.println(sToken);
+        if (sFingerprint.length() == 0) {
+            Serial.println("INVALID FINGERPRINT DATA!");
+        } else if (sToken.length() == 0) {
+            Serial.println("INVALID TOKEN DATA!");
+        }
 
-  /* check fingerprint and token length */
-  if ((sFingerprint.length() > 0) && (sToken.length() > 0)) {
+        return;
+    }
+
+    /* if there is not photo, it doesn't make any sense to send anything */
+    if (photo.length() == 0) {
+        Serial.println("ERROR SEND PICTURE TO SERVER! NO PICTURE!");
+
+        return;
+    }
+
+    WiFiClientSecure client;
     client.setCACert(root_ca);
     Serial.println("\nConnecting to server...");
 
     /* connecting to server */
     if (!client.connect(DOMAIN, 443)) {
-      Serial.println("Connection failed!");
+        Serial.println("Connection failed!");
 
     } else {
-      /* send data to server */
-      Serial.println("Connected to server!");
-      client.println("PUT " + String(HOST_URL) + " HTTP/1.0");
-      client.println("Host: " + String(DOMAIN));
-      client.println("User-Agent: PrintPeek32");
-      client.println("Connection: close");
+        /* send data to server */
+        Serial.println("Connected to server!");
+        client.println("PUT " + String(HOST_URL) + " HTTP/1.0");
+        client.println("Host: " + String(DOMAIN));
+        client.println("User-Agent: PrintPeek32");
+        client.println("Connection: close");
 
-      client.println("Content-Type: image/jpg");
-      client.println("fingerprint: " + sFingerprint);
-      client.println("token: " + sToken);
-      client.print("Content-Length: ");
-      client.println(photo.length());
-      client.println();
+        client.println("Content-Type: image/jpg");
+        client.println("fingerprint: " + sFingerprint);
+        client.println("token: " + sToken);
+        client.print("Content-Length: ");
+        client.println(photo.length());
+        client.println();
 
-      /* photo fragmentation */
-      esp_task_wdt_reset();
-      for (int index = 0; index < photo.length(); index = index + PHOTO_FRAGMENT_SIZE) {
-        client.print(photo.substring(index, index + PHOTO_FRAGMENT_SIZE));
-        Serial.println(index);
-      }
-      Serial.println("Send done!");
-      esp_task_wdt_reset();
+        /* reset watchdog */
+        esp_task_wdt_reset();
 
-      /* check response header */
-      while (client.connected()) {
-        String line = client.readStringUntil('\n');
-        if (line == "\r") {
-          Serial.print("Headers received: ");
-          Serial.println(line);
-          break;
+        /* photo fragmentation */
+        for (int index = 0; index < photo.length(); index = index + PHOTO_FRAGMENT_SIZE) {
+            client.print(photo.substring(index, index + PHOTO_FRAGMENT_SIZE));
+
+            Serial.print("Sent ");
+            Serial.print(index);
+            Serial.println(" bytes.");
         }
-      }
+        Serial.println("Send done!");
 
-      /* check response data */
-      Serial.print("Received data[");
-      BackendReceivedData = "";
-      while (client.available()) {
+        /* reset watchdog */
+        esp_task_wdt_reset();
+
+        /* check response header */
+        while (client.connected()) {
+            String line = client.readStringUntil('\n');
+            if (line == "\r") {
+                Serial.print("Headers received: ");
+                Serial.println(line);
+                break;
+            }
+        }
+    }
+
+    /* check response data */
+    Serial.print("Received data[");
+    BackendReceivedData = "";
+    while (client.available()) {
         BackendReceivedData += (char) client.read();
-      }
-      Serial.print(BackendReceivedData.length());
-      Serial.print("]: ");
-      Serial.println(BackendReceivedData);
+    }
+    Serial.print(BackendReceivedData.length());
+    Serial.print("]: ");
+    Serial.println(BackendReceivedData);
 
-      client.stop();
-    }
-  } else {
-    /* err message */
-    Serial.println("ERROR SEND PICTURE TO SERVER! INVALID DATA!");
-    Serial.print("Fingerprint: ");
-    Serial.println(sFingerprint);
-    Serial.print("Token: ");
-    Serial.println(sToken);
-    if (sFingerprint.length() == 0) {
-      Serial.println("INVALID FINGERPRINT DATA!");
-    } else if (sToken.length() == 0) {
-      Serial.println("INVALID TOKEN DATA!");
-    }
-  }
+    client.stop();
 }
 
 /* make json data for AP page on the ESP32 */
